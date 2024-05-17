@@ -1,0 +1,272 @@
+---
+title: '<font size = 7 color = "black">Multiple Linear Regression </font>'
+subtitle: '<font size = 6 color = "black"> Model Building and Analysis of Flight Delay Times </font>'
+author: '<font size = 5 color = "black">Ian Vanwright </font>'
+institute: '<font size = 6 color = "white">West Chester University of Pennsylvania</font><br> '
+date: ' <font color = "black" size =4> Prepared for<br> </font> <font color = "gold" size = 6> STA490: Data Visualization </font> <br><br> <font color = "white" size = 3></font>'
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer01.css
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+if (!require("knitr")) {
+   install.packages("knitr")
+   library(knitr)
+}
+if (!require("pander")) {
+   install.packages("pander")
+   library(pander)
+}
+if (!require("plotly")) {
+   install.packages("plotly")
+   library(plotly)
+}
+if (!require("ggplot2")) {
+   install.packages("ggplot2")
+   library(ggplot2)
+}
+if (!require("kableExtra")) {
+  install.packages("kableExtra")
+  library(kableExtra)
+}
+knitr::opts_chunk$set(
+                  fig.width=3, 
+                  fig.height=3, 
+                  fig.retina=12,
+                  out.width = "100%",
+                  cache = FALSE,
+                  echo = FALSE,
+                  message = FALSE, 
+                  warning = FALSE,
+                  hiline = TRUE
+                  )
+```
+
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+  style_duo_accent(primary_color = "#1F4257",
+          secondary_color = "#380F2A",
+          # fonts
+          header_font_google = google_font("Martel"),
+          text_font_google = google_font("Lato"),
+          code_font_google = google_font("Fira Mono"))
+  
+
+```
+
+
+```{r, include=FALSE}
+ if (!require("xaringanthemer")) {
+      install.packages("xaringanthemer")
+      library(xaringanthemer)
+     }
+```
+
+```{r}
+flight1<- read.csv("flight_delay-data.csv")
+flight2 <- flight1[-which(flight1$Arr_Delay == 0),]
+```
+
+class: top, center
+#  Table of Contents: 
+
+.left[
+
+- Introduction 
+
+- Research Question
+
+- Recap of Building the Final Model
+
+- Bootstrapping Part 1: Observations 
+
+- Bootstrapping Part 2: Residuals
+
+- Summary of Results/Model Comparisons
+
+- Conclusion
+]
+
+
+---
+
+class: top, center
+# Introduction: 
+
+
+.left[
+
+
+- Data Set was taken from 'Applied Analytics Through Case Studies Using SAS and R by Deepti Gupta'
+
+- Data set consists of 3593 observations and 11 variables
+
+- Variables are as follows:
+   - 1) Carrier (Categorical) - The airline that the flight is taken with
+   - 2) Airport_Distance (Numeric) - The Distance between the airports (in miles)
+   - 3) Number_of_flights (Numeric) - Total number of flights in airport
+   - 4) Weather (Numeric) - Delay due to weather condition ranked 0-10, with 0 being mild and 10 being extreme 
+   - 5) Support_Crew_Available (Numeric) - Total number of support crew available
+   - 6) Baggage_loading_time (Numeric) - Time (in minutes) for loading the baggage
+  - 7) Late_Arrival_o (Numeric) - Time (in minutes) for late arriving aircraft of the same flight
+  - 8) Cleaning_o (Numeric) - Time (in minutes) for aircraft cleaning
+  - 9) Fueling_o (Numeric) - Time (in minutes) for aircraft fueling
+  - 10) Security_o (Numeric) - Time (in minutes) for security checking
+  - 11) Arr_Delay (Numeric) -  Flight arrival time (in minutes). This will be the dependent variable in the model
+
+]
+
+---
+
+class: top, center
+# Summary of Building the Final Model
+
+.left[
+
+- Fit the full model with Arr_Delay as the response and all other variables as predictors
+
+- T-tests determined Cleaning_o, Fueling_o, Security_o were all insignificant (p > 0.05) and I decided to remove carrier (this created the reduced model, which analysis was done with)
+
+- Diagnostics of the reduced model were checked, and the assumptions of normality and homoscedasticity (constant variances) were violated
+
+- A box-cox transformation was applied to Arr_Delay  (λ = 0.5) , fixing issues with normality and constant variances
+
+- Comparing the goodness-of-fit measures of the full model, the reduced model, and the model with the transformation, the model with the transformation was chosen
+
+
+]
+---
+
+class: top, center
+# Final Model
+
+.center[
+
+<div style="text-align: center;">
+  <img src= "img/MLRInitialFinalModel.PNG" width = 600 height=450;>
+</div>
+
+
+]
+
+---
+
+class: top, center
+# Residual Analysis of the Final Model
+
+<div style="text-align: center;">
+  <img src= "img/MLRResidualAnalysis.PNG" width = 300 height=300;">
+  <img src= "img/MLRResidualHistogram.PNG" width = 300 height=300;">
+  <img src= "img/MLRMeanResiduals.PNG" width = 300 height=300;">
+</div>
+
+
+---
+class: top, center
+# Bootstrapping (Part 1): Observations
+
+.left[
+
+- Bootstrapping: Resampling with replacement
+
+- Because our sample size is big enough, bootstrapping is a good method to use
+
+- Sampling Distributions of Coefficient Estimates are pictured 
+
+- Red density curves represent the actual sampling distribution of the coefficients, while the blue density curves represent the sampling distribution created from bootstrapping 
+
+]
+
+<div style="text-align: center;">
+  <img src= "img/MLRBootstrap1.PNG" width = 300 height=300;">
+  <img src= "img/MLRBootstrap2.PNG" width = 300 height=300;">
+  
+</div>
+
+---
+class: top, center
+# Bootstrapping Part 1 (Continued)
+
+- We can check how well the bootstrap did by summarizing the results and building a confidence interval
+
+- The estimated parameters and the 95% confidence interval for the bootstrapped sampling distribution are pictured 
+
+- All parameter estimates in the coefficient matrices match (within rounding)
+
+<div style="text-align: center;">
+
+  <img src= "img/MLRInitialFinalModel.PNG" width = 300 height=300;">
+  <img src= "img/MLRBootstrapModel1.PNG" width = 300 height=300;">
+
+</div>
+
+---
+
+class: top, center
+# Bootstrapping (Part 2): Residuals
+
+.left[
+
+- Now we will look at the residuals of our sample and resample 
+
+- Residual sampling distribution values: fitted value + residual
+
+- Sampling distributions of coefficient estimates are pictured
+Red density curves represent the actual sampling distribution of the coefficients, while the blue density curves represent the sampling distribution created from bootstrapping 
+
+]
+
+<div style="text-align: center;">
+  <img src= "img/MLRBootstrap3.PNG" width = 300 height=300;">
+  <img src= "img/MLRBootstrap4.PNG" width = 300 height=300;">
+
+</div>
+
+---
+
+class: top, center
+# Boostrap Part 2 (Continued)
+
+- Again, we can check how well the bootstrap did by summarizing the results and building a confidence interval
+
+- The estimated parameters and the 95% confidence interval for the bootstrapped residual sampling distribution are pictured
+
+- Again, all parameter estimates in the coefficient matrices match (within rounding)
+
+<div style="text-align: center;">
+  <img src= "img/MLRInitialFinalModel.PNG" width = 300 height=300;">
+  <img src= "img/MLRBootstrapModel2.PNG" width = 300 height=300;">
+
+</div>
+
+---
+
+class: top, center
+# Summary of Results
+
+- Essentially no difference in parameter estimation for all 3 models
+
+- Will choose parametric (original) model 
+
+<div style="text-align: center;">
+  <img src= "img/MLRInitialFinalModel.PNG" width = 400 height=400;">
+  
+
+</div>
+
+---
+class: middle, center
+# That's all, folks!
+
+# Any Questions, Comments, Thoughts, Concerns?
+
